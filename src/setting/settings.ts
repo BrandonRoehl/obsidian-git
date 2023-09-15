@@ -694,24 +694,35 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                     plugin.saveSettings();
                 });
             });
+    
+    new Setting(containerEl)
+        .setName("Disable on this device")
+        .addToggle((toggle) =>
+            toggle
+                .setValue(plugin.localStorage.getPluginDisabled())
+                .onChange((value) => {
+                    plugin.localStorage.setPluginDisabled(value);
+                    if (value) {
+                        plugin.unloadPlugin();
+                    } else {
+                        plugin.loadPlugin();
+                    }
+                    new Notice(
+                        "Obsidian must be restarted for the changes to take affect"
+                    );
+                })
+        );
 
+
+    // if (!(plugin.gitManager instanceof SimpleGit))
         new Setting(containerEl)
-            .setName("Disable on this device")
-            .addToggle((toggle) =>
-                toggle
-                    .setValue(plugin.localStorage.getPluginDisabled())
-                    .onChange((value) => {
-                        plugin.localStorage.setPluginDisabled(value);
-                        if (value) {
-                            plugin.unloadPlugin();
-                        } else {
-                            plugin.loadPlugin();
-                        }
-                        new Notice(
-                            "Obsidian must be restarted for the changes to take affect"
-                        );
-                    })
-            );
+            .setName("potato potato")
+            .addText((cb) => {
+                cb.setValue(plugin.localStorage.getWorkingCopyURLKey() ?? "");
+                cb.onChange((value) => {
+                    plugin.localStorage.setWorkingCopyURLKey(value);
+                });
+            });
 
         new Setting(containerEl)
             .setName("Donate")

@@ -15,6 +15,7 @@ export class LocalStorageSettings {
             "lastAutoPush",
             "gitPath",
             "pluginDisabled",
+            "workingCopyURLKey"
         ];
         for (const key of keys) {
             const old = localStorage.getItem(this.prefix + key);
@@ -123,5 +124,13 @@ export class LocalStorageSettings {
 
     setPluginDisabled(value: boolean): void {
         return app.saveLocalStorage(this.prefix + "pluginDisabled", `${value}`);
+    }
+
+    getWorkingCopyURLKey(): string | null {
+        return app.loadLocalStorage(this.prefix + "workingCopyURLKey");
+    }
+
+    setWorkingCopyURLKey(value: string): void {
+        return app.saveLocalStorage(this.prefix + "workingCopyURLKey", value);
     }
 }
