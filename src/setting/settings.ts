@@ -13,6 +13,7 @@ import {
 } from "src/constants";
 import { IsomorphicGit } from "src/gitManager/isomorphicGit";
 import { SimpleGit } from "src/gitManager/simpleGit";
+import { WorkingCopy } from "src/gitManager/workingCopy";
 import { previewColor } from "src/lineAuthor/lineAuthorProvider";
 import {
     LineAuthorDateTimeFormatOptions,
@@ -89,10 +90,9 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
             new Setting(containerEl)
                 .setName(`Vault ${commitOrBackup} interval (minutes)`)
                 .setDesc(
-                    `${
-                        plugin.settings.differentIntervalCommitAndPush
-                            ? "Commit"
-                            : "Commit and push"
+                    `${plugin.settings.differentIntervalCommitAndPush
+                        ? "Commit"
+                        : "Commit and push"
                     } changes every X minutes. Set to 0 (default) to disable. (See below setting for further configuration!)`
                 )
                 .addText((text) =>
@@ -257,7 +257,7 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                 .setName("Commit message on auto backup/commit")
                 .setDesc(
                     "Available placeholders: {{date}}" +
-                        " (see below), {{hostname}} (see below), {{numFiles}} (number of changed files in the commit) and {{files}} (changed files in commit message)"
+                    " (see below), {{hostname}} (see below), {{numFiles}} (number of changed files in the commit) and {{files}} (changed files in commit message)"
                 )
                 .addTextArea((text) =>
                     text
@@ -276,7 +276,7 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                 .setName("Commit message on manual backup/commit")
                 .setDesc(
                     "Available placeholders: {{date}}" +
-                        " (see below), {{hostname}} (see below), {{numFiles}} (number of changed files in the commit) and {{files}} (changed files in commit message)"
+                    " (see below), {{hostname}} (see below), {{numFiles}} (number of changed files in the commit) and {{files}} (changed files in commit message)"
                 )
                 .addTextArea((text) =>
                     text
@@ -694,35 +694,34 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                     plugin.saveSettings();
                 });
             });
-    
-    new Setting(containerEl)
-        .setName("Disable on this device")
-        .addToggle((toggle) =>
-            toggle
-                .setValue(plugin.localStorage.getPluginDisabled())
-                .onChange((value) => {
-                    plugin.localStorage.setPluginDisabled(value);
-                    if (value) {
-                        plugin.unloadPlugin();
-                    } else {
-                        plugin.loadPlugin();
-                    }
-                    new Notice(
-                        "Obsidian must be restarted for the changes to take affect"
-                    );
-                })
-        );
 
-
-    // if (!(plugin.gitManager instanceof SimpleGit))
-        new Setting(containerEl)
-            .setName("potato potato")
-            .addText((cb) => {
-                cb.setValue(plugin.localStorage.getWorkingCopyURLKey() ?? "");
-                cb.onChange((value) => {
-                    plugin.localStorage.setWorkingCopyURLKey(value);
+        if (plugin.gitManager instanceof WorkingCopy)
+            new Setting(containerEl)
+                .setName("Working Copy URL Key")
+                .addText((cb) => {
+                    cb.setValue(plugin.localStorage.getWorkingCopyURLKey() ?? "");
+                    cb.onChange((value) => {
+                        plugin.localStorage.setWorkingCopyURLKey(value);
+                    });
                 });
-            });
+
+        new Setting(containerEl)
+            .setName("Disable on this device")
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(plugin.localStorage.getPluginDisabled())
+                    .onChange((value) => {
+                        plugin.localStorage.setPluginDisabled(value);
+                        if (value) {
+                            plugin.unloadPlugin();
+                        } else {
+                            plugin.loadPlugin();
+                        }
+                        new Notice(
+                            "Obsidian must be restarted for the changes to take affect"
+                        );
+                    })
+            );
 
         new Setting(containerEl)
             .setName("Donate")
@@ -814,11 +813,11 @@ export class ObsidianGitSettingsTab extends PluginSettingTab {
                 .addDropdown((dropdown) => {
                     dropdown.addOptions(<
                         Record<LineAuthorFollowMovement, string>
-                    >{
-                        inactive: "Do not follow (default)",
-                        "same-commit": "Follow within same commit",
-                        "all-commits": "Follow within all commits (maybe slow)",
-                    });
+                        >{
+                            inactive: "Do not follow (default)",
+                            "same-commit": "Follow within same commit",
+                            "all-commits": "Follow within all commits (maybe slow)",
+                        });
                     dropdown.setValue(this.settings.lineAuthor.followMovement);
                     dropdown.onChange((value: LineAuthorFollowMovement) =>
                         this.lineAuthorSettingHandler("followMovement", value)

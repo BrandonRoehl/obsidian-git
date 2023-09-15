@@ -28,6 +28,7 @@ import {
 } from "./constants";
 import { GitManager } from "./gitManager/gitManager";
 import { IsomorphicGit } from "./gitManager/isomorphicGit";
+import { WorkingCopy } from "./gitManager/workingCopy";
 import { SimpleGit } from "./gitManager/simpleGit";
 import { openHistoryInGitHub, openLineInGitHub } from "./openInGitHub";
 import { LocalStorageSettings } from "./setting/localStorageSettings";
@@ -297,10 +298,10 @@ export default class ObsidianGit extends Plugin {
                         .append(
                             this.gitManager.getVaultPath(".gitignore"),
                             "\n" +
-                                this.gitManager.asRepositoryRelativePath(
-                                    file!.path,
-                                    true
-                                )
+                            this.gitManager.asRepositoryRelativePath(
+                                file!.path,
+                                true
+                            )
                         )
                         .then(() => {
                             this.refresh();
@@ -740,6 +741,10 @@ export default class ObsidianGit extends Plugin {
         return Platform.isDesktopApp;
     }
 
+    get useWorkingCopy(): boolean {
+        return Platform.isIosApp;
+    }
+
     async init(): Promise<void> {
         this.showNotices();
 
@@ -747,6 +752,8 @@ export default class ObsidianGit extends Plugin {
             if (this.useSimpleGit) {
                 this.gitManager = new SimpleGit(this);
                 await (this.gitManager as SimpleGit).setGitInstance();
+            } else if (this.useWorkingCopy) {
+                this.gitManager = new WorkingCopy(this);
             } else {
                 this.gitManager = new IsomorphicGit(this);
             }
@@ -805,7 +812,7 @@ export default class ObsidianGit extends Plugin {
                 default:
                     console.log(
                         "Something weird happened. The 'checkRequirements' result is " +
-                            result
+                        result
                     );
             }
         } catch (error) {
@@ -937,8 +944,7 @@ export default class ObsidianGit extends Plugin {
             const status = await this.gitManager.status();
             if (status.conflicted.length > 0) {
                 this.displayError(
-                    `You have conflicts in ${status.conflicted.length} ${
-                        status.conflicted.length == 1 ? "file" : "files"
+                    `You have conflicts in ${status.conflicted.length} ${status.conflicted.length == 1 ? "file" : "files"
                     }`
                 );
                 this.handleConflict(status.conflicted);
@@ -1023,10 +1029,8 @@ export default class ObsidianGit extends Plugin {
             // check for conflict files on auto backup
             if (fromAutoBackup && status.conflicted.length > 0) {
                 this.displayError(
-                    `Did not commit, because you have conflicts in ${
-                        status.conflicted.length
-                    } ${
-                        status.conflicted.length == 1 ? "file" : "files"
+                    `Did not commit, because you have conflicts in ${status.conflicted.length
+                    } ${status.conflicted.length == 1 ? "file" : "files"
                     }. Please resolve them and commit per command.`
                 );
                 this.handleConflict(status.conflicted);
@@ -1117,8 +1121,7 @@ export default class ObsidianGit extends Plugin {
             }
             this.setUpAutoBackup();
             this.displayMessage(
-                `Committed${roughly ? " approx." : ""} ${committedFiles} ${
-                    committedFiles == 1 ? "file" : "files"
+                `Committed${roughly ? " approx." : ""} ${committedFiles} ${committedFiles == 1 ? "file" : "files"
                 }`
             );
         } else {
@@ -1180,8 +1183,7 @@ export default class ObsidianGit extends Plugin {
             (status = await this.updateCachedStatus()).conflicted.length > 0
         ) {
             this.displayError(
-                `Cannot push. You have conflicts in ${
-                    status.conflicted.length
+                `Cannot push. You have conflicts in ${status.conflicted.length
                 } ${status.conflicted.length == 1 ? "file" : "files"}`
             );
             this.handleConflict(status.conflicted);
@@ -1197,8 +1199,7 @@ export default class ObsidianGit extends Plugin {
             console.log("Pushed!", pushedFiles);
             if (pushedFiles > 0) {
                 this.displayMessage(
-                    `Pushed ${pushedFiles} ${
-                        pushedFiles == 1 ? "file" : "files"
+                    `Pushed ${pushedFiles} ${pushedFiles == 1 ? "file" : "files"
                     } to remote`
                 );
             } else {
@@ -1223,8 +1224,7 @@ export default class ObsidianGit extends Plugin {
 
         if (pulledFiles.length > 0) {
             this.displayMessage(
-                `Pulled ${pulledFiles.length} ${
-                    pulledFiles.length == 1 ? "file" : "files"
+                `Pulled ${pulledFiles.length} ${pulledFiles.length == 1 ? "file" : "files"
                 } from remote`
             );
             this.lastPulledFiles = pulledFiles;
